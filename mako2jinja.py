@@ -25,15 +25,15 @@ def mako2jinja(input_file):
 
     output = ''
 
-    macro_start = re.compile('(.*)<%.*def name="(.*)">(.*)', re.IGNORECASE)
-    macro_end = re.compile('(.*)</%def>(.*)', re.IGNORECASE)
-    val = re.compile('(.*)\$\{(.*)\}(.*)', re.IGNORECASE)
+    macro_start = re.compile(r'(.*)<%.*def name="(.*)">(.*)', re.IGNORECASE)
+    macro_end = re.compile(r'(.*)</%def>(.*)', re.IGNORECASE)
+    val = re.compile(r'\$\{(.*?)\}', re.IGNORECASE)
 
-    if_start = re.compile('(.*)%.*if (.*):(.*)', re.IGNORECASE)
-    if_end = re.compile('(.*)%endif(.*)', re.IGNORECASE)
+    if_start = re.compile(r'(.*)% *if (.*):(.*)', re.IGNORECASE)
+    if_end = re.compile(r'(.*)% *endif(.*)', re.IGNORECASE)
 
-    for_start = re.compile('(.*)%.*for (.*):(.*)', re.IGNORECASE)
-    for_end = re.compile('(.*)%endfor(.*)', re.IGNORECASE)
+    for_start = re.compile(r'(.*)% *for (.*):(.*)', re.IGNORECASE)
+    for_end = re.compile(r'(.*)% *endfor(.*)', re.IGNORECASE)
 
     for line in input_file:
         m_start = macro_start.search(line)
@@ -50,15 +50,15 @@ def mako2jinja(input_file):
             output += m_end.expand(r'\1{% endmacro }\1') + '\n'
 
         elif m_val:
-            output += val.sub(r'\1{{\2}}\3', line)
+            output += val.sub(r'{{\1}}', line)
 
         elif m_if_start:
-            output += m_if_start.expand(r'\1{% if \2}\3') + '\n'
+            output += m_if_start.expand(r'\1{% if \2 %}\3') + '\n'
         elif m_if_end:
             output += m_if_end.expand(r'\1{% endif %}\2') + '\n'
 
         elif m_for_start:
-            output += m_for_start.expand(r'\1{% for \2}\3') + '\n'
+            output += m_for_start.expand(r'\1{% for \2 %}\3') + '\n'
         elif m_for_end:
             output += m_for_end.expand(r'\1{% endfor %}\2') + '\n'
 
