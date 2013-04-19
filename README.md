@@ -1,6 +1,6 @@
 # Mako2Jinja
 
-Converts a given mako template into a jinja template, badly. It's just intended to help with the mechanical editing - you'll have to fixup anything complicated yourself.
+Converts a given mako template into a jinja template, badly. It's just intended to help with the mechanical editing - you'll probably have to fixup anything complicated yourself.
 
 
 	Usage:
