@@ -25,7 +25,7 @@ def mako2jinja(input_file):
 
     output = ''
 
-    macro_start = re.compile(r'(.*)<%.*def name="(.*?)"(.*)', re.IGNORECASE)
+    macro_start = re.compile(r'(.*)<%.*def name="(.*?)".*>(.*)', re.IGNORECASE)
     macro_end = re.compile(r'(.*)</%def>(.*)', re.IGNORECASE)
     val = re.compile(r'\$\{(.*?)\}', re.IGNORECASE)
 
