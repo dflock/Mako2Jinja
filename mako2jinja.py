@@ -41,6 +41,8 @@ def mako2jinja(input_file):
     block_start = re.compile(r'(.*)<% *block.*name="(.*?)".*>(.*)', re.IGNORECASE)
     block_end = re.compile(r'(.*)</%block>(.*)', re.IGNORECASE)
 
+    filter_h = re.compile(r'\|h', re.IGNORECASE)
+
     for line in input_file:
         m_macro_start = macro_start.search(line)
         m_macro_end = macro_end.search(line)
@@ -53,14 +55,21 @@ def mako2jinja(input_file):
         m_inherit = inherit.search(line)
         m_block_start = block_start.search(line)
         m_block_end = block_end.search(line)
+        m_filter_h = filter_h.search(line)
+
+        # Process line for repeated inline replacements
+        if m_val:
+            line = val.sub(r'{{ \1 }}', line)
+
+        if m_filter_h:
+            line = filter_h.sub(r'|e', line)
+
+        # Process line for single 'whole line' replacements
 
         if m_macro_start:
-            output += m_macro_start.expand(r'\1{% macro \2}\3') + '\n'
+            output += m_macro_start.expand(r'\1{% macro \2 %}\3') + '\n'
         elif m_macro_end:
-            output += m_macro_end.expand(r'\1{% endmacro }\1') + '\n'
-
-        elif m_val:
-            output += val.sub(r'{{ \1 }}', line)
+            output += m_macro_end.expand(r'\1{% endmacro %}\1') + '\n'
 
         elif m_if_start:
             output += m_if_start.expand(r'\1{% if \2 %}\3') + '\n'
@@ -78,9 +87,9 @@ def mako2jinja(input_file):
             output += m_inherit.expand(r"{% extends '\2' %}\3") + '\n'
 
         elif m_block_start:
-            output += m_block_start.expand(r'\1{% block \2 }\3') + '\n'
+            output += m_block_start.expand(r'\1{% block \2 %}\3') + '\n'
         elif m_block_end:
-            output += m_block_end.expand(r'\1{% endblock }\1') + '\n'
+            output += m_block_end.expand(r'\1{% endblock %}\1') + '\n'
 
         else:
             # Doesn't match anything we're going to process, pass though
