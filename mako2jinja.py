@@ -25,7 +25,7 @@ def mako2jinja(input_file):
 
     output = ''
 
-    macro_start = re.compile(r'(.*)<%.*def name="(.*)">(.*)', re.IGNORECASE)
+    macro_start = re.compile(r'(.*)<%.*def name="(.*?)"(.*)', re.IGNORECASE)
     macro_end = re.compile(r'(.*)</%def>(.*)', re.IGNORECASE)
     val = re.compile(r'\$\{(.*?)\}', re.IGNORECASE)
 
@@ -35,19 +35,29 @@ def mako2jinja(input_file):
     for_start = re.compile(r'(.*)% *for (.*):(.*)', re.IGNORECASE)
     for_end = re.compile(r'(.*)% *endfor(.*)', re.IGNORECASE)
 
+    namespace = re.compile(r'(.*)<% *namespace name="(.*?)".* file="(.*?)".*/>(.*)', re.IGNORECASE)
+    inherit = re.compile(r'(.*)<% *inherit file="(.*?)".*/>(.*)', re.IGNORECASE)
+
+    block_start = re.compile(r'(.*)<% *block.*name="(.*?)".*>(.*)', re.IGNORECASE)
+    block_end = re.compile(r'(.*)</%block>(.*)', re.IGNORECASE)
+
     for line in input_file:
-        m_start = macro_start.search(line)
-        m_end = macro_end.search(line)
+        m_macro_start = macro_start.search(line)
+        m_macro_end = macro_end.search(line)
         m_val = val.search(line)
         m_if_start = if_start.search(line)
         m_if_end = if_end.search(line)
         m_for_start = for_start.search(line)
         m_for_end = for_end.search(line)
+        m_namspace = namespace.search(line)
+        m_inherit = inherit.search(line)
+        m_block_start = block_start.search(line)
+        m_block_end = block_end.search(line)
 
-        if m_start:
-            output += m_start.expand(r'\1{% macro \2}\3') + '\n'
-        elif m_end:
-            output += m_end.expand(r'\1{% endmacro }\1') + '\n'
+        if m_macro_start:
+            output += m_macro_start.expand(r'\1{% macro \2}\3') + '\n'
+        elif m_macro_end:
+            output += m_macro_end.expand(r'\1{% endmacro }\1') + '\n'
 
         elif m_val:
             output += val.sub(r'{{ \1 }}', line)
@@ -61,6 +71,16 @@ def mako2jinja(input_file):
             output += m_for_start.expand(r'\1{% for \2 %}\3') + '\n'
         elif m_for_end:
             output += m_for_end.expand(r'\1{% endfor %}\2') + '\n'
+
+        elif m_namspace:
+            output += m_namspace.expand(r"\1{% import '\3' as \2 %}\4") + '\n'
+        elif m_inherit:
+            output += m_inherit.expand(r"{% extends '\2' %}\3") + '\n'
+
+        elif m_block_start:
+            output += m_block_start.expand(r'\1{% block \2 }\3') + '\n'
+        elif m_block_end:
+            output += m_block_end.expand(r'\1{% endblock }\1') + '\n'
 
         else:
             # Doesn't match anything we're going to process, pass though
