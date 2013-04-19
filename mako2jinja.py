@@ -50,7 +50,7 @@ def mako2jinja(input_file):
             output += m_end.expand(r'\1{% endmacro }\1') + '\n'
 
         elif m_val:
-            output += val.sub(r'{{\1}}', line)
+            output += val.sub(r'{{ \1 }}', line)
 
         elif m_if_start:
             output += m_if_start.expand(r'\1{% if \2 %}\3') + '\n'
