@@ -48,6 +48,8 @@ def mako2jinja(input_file):
     func_len = re.compile(r'len\((.*?)\)', re.IGNORECASE)
     filter_h = re.compile(r'\|h', re.IGNORECASE)
 
+    comment_single_line = re.compile(r'^\s*#+ *(.*?)$', re.IGNORECASE)
+
     for line in input_file:
 
         # Process line for repeated inline replacements
@@ -78,7 +80,12 @@ def mako2jinja(input_file):
         m_block_start = block_start.search(line)
         m_block_end = block_end.search(line)
 
-        if m_macro_start:
+        m_comment_single_line = comment_single_line.search(line)
+
+        if m_comment_single_line:
+            output += m_comment_single_line.expand(r'{# \1 #}') + '\n'
+
+        elif m_macro_start:
             output += m_macro_start.expand(r'\1{% macro \2 %}\3') + '\n'
         elif m_macro_end:
             output += m_macro_end.expand(r'\1{% endmacro %}\1') + '\n'
