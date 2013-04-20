@@ -25,7 +25,7 @@ def mako2jinja(input_file):
 
     output = ''
 
-    # TODO: OMG, this code is so horrible. Just look at it:
+    # TODO: OMG, this code is so horrible. Look at it; just look at it:
 
     macro_start = re.compile(r'(.*)<%.*def name="(.*?)".*>(.*)', re.IGNORECASE)
     macro_end = re.compile(r'(.*)</%def>(.*)', re.IGNORECASE)
